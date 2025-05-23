@@ -6,8 +6,11 @@
   "dependencies": {
     "mongodb": "^4.13.0"
   },
+  "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vercel dev",
+    "build": "echo \"No build step needed\"",
+    "deploy": "vercel --prod"
   },
   "keywords": [
     "mongodb",
