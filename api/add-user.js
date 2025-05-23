@@ -18,28 +18,63 @@ module.exports = async (req, res) => {
     const { name, email } = req.body;
     
     // Use hardcoded connection string instead of environment variable for testing
-    const uri = "mongodb+srv://rtalhaonline:SbRerkXKr4zr1yjR@cluster0.kjkn6gf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+    const uri = "mongodb+srv://rtalhaonline:SbRerkXKr4zr1yjR@cluster0.kjkn6gf.mongodb.net/studentsDB?retryWrites=true&w=majority&appName=Cluster0";
     
     console.log("Connecting to MongoDB...");
-    const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
     
-    await client.connect();
-    console.log("MongoDB connected successfully");
+    // Update MongoDB client instantiation with more explicit options
+    const client = new MongoClient(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      connectTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+    });
     
-    const db = client.db("studentsDB");
-    const collection = db.collection("users");
+    try {
+      await client.connect();
+      console.log("MongoDB connected successfully");
+      
+      const database = client.db("studentsDB");
+      const collection = database.collection("users");
 
-    const result = await collection.insertOne({ name, email, timestamp: new Date() });
-    console.log("Document inserted:", result);
-    
-    await client.close();
-    return res.status(200).json({ message: "User added successfully!", success: true });
+      // Add data validation
+      if (!name || !email) {
+        throw new Error("Name and email are required");
+      }
+
+      const newUser = { 
+        name, 
+        email, 
+        timestamp: new Date(),
+        createdAt: new Date().toISOString() 
+      };
+      
+      console.log("Attempting to insert document:", newUser);
+      const result = await collection.insertOne(newUser);
+      
+      console.log("Document inserted with ID:", result.insertedId);
+      
+      return res.status(200).json({ 
+        message: "User added successfully!", 
+        success: true,
+        userId: result.insertedId 
+      });
+    } catch (dbError) {
+      console.error("Database operation error:", dbError);
+      return res.status(500).json({ 
+        message: "Database operation failed", 
+        error: dbError.message
+      });
+    } finally {
+      // Make sure to close the client connection
+      await client.close();
+      console.log("MongoDB connection closed");
+    }
   } catch (error) {
-    console.error("Server error:", error.message);
+    console.error("Server error:", error.message, error.stack);
     return res.status(500).json({ 
       message: "Internal server error", 
-      error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: error.message
     });
   }
 };
