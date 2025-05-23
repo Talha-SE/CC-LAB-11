@@ -1,0 +1,19 @@
+{
+  "name": "mongodb-vercel-integration",
+  "version": "1.0.0",
+  "description": "A fullstack application connecting Vercel with MongoDB Atlas",
+  "main": "index.js",
+  "dependencies": {
+    "mongodb": "^4.13.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mongodb",
+    "vercel",
+    "fullstack"
+  ],
+  "author": "",
+  "license": "ISC"
+}
