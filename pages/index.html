@@ -35,29 +35,70 @@
     button:hover {
       background-color: #45a049;
     }
+    #result {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
   </style>
 </head>
 <body>
   <h2>Register User</h2>
   <form id="userForm">
     <input name="name" placeholder="Name" required />
-    <input name="email" placeholder="Email" required />
+    <input name="email" type="email" placeholder="Email" required />
     <button type="submit">Submit</button>
   </form>
+  <div id="result"></div>
+
   <script>
     document.getElementById("userForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const data = {
-        name: e.target.name.value,
-        email: e.target.email.value,
-      };
-      const response = await fetch("/api/add-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      const result = await response.json();
-      alert(result.message);
+      const resultDiv = document.getElementById("result");
+      resultDiv.textContent = "Processing...";
+      resultDiv.className = "";
+      resultDiv.style.display = "block";
+      
+      try {
+        const data = {
+          name: e.target.name.value,
+          email: e.target.email.value,
+        };
+        
+        console.log("Submitting data:", data);
+        
+        const response = await fetch("/api/add-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        
+        console.log("Response status:", response.status);
+        
+        const result = await response.json();
+        console.log("Response data:", result);
+        
+        if (response.ok) {
+          resultDiv.textContent = result.message;
+          resultDiv.className = "success";
+        } else {
+          resultDiv.textContent = result.message || "Error submitting form";
+          resultDiv.className = "error";
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        resultDiv.textContent = "Error: " + (error.message || "Unknown error");
+        resultDiv.className = "error";
+      }
     });
   </script>
 </body>
